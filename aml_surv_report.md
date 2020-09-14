@@ -18,6 +18,7 @@ output:
 
 Figure: Timing of key events for the 48 patients. 
 ![](aml_surv_report_files/figure-html/time_line_plot-1.png)<!-- -->
+
 Dashed lines are patients that died; solid lines are patients that were alive at the last follow-up. 
 
 Note: it stands out somewhat that there is not follow-up for the living patients up to the same date. 
@@ -44,9 +45,6 @@ Note: Missing one w/o a correct dx and/or EOS date.
 
 ![](aml_surv_report_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
   
-```
-
-
 
 ### BCL2
 
@@ -96,8 +94,6 @@ Table: Table continues below
 --------------------------------
 
 ![](aml_surv_report_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
-
-
 
 ### Cox models
 

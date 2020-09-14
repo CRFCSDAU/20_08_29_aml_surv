@@ -79,6 +79,7 @@ Figure: Timing of key events for the `r length(unique(times$id))` patients.
     ylab("")
 
 ```
+
 Dashed lines are patients that died; solid lines are patients that were alive at the last follow-up. 
 
 Note: it stands out somewhat that there is not follow-up for the living patients up to the same date. 
@@ -136,9 +137,6 @@ Note: Missing one w/o a correct dx and/or EOS date.
   
 ```
   
-```
-
-
 
 ### BCL2
 
@@ -192,8 +190,6 @@ Note: Missing one w/o a correct dx and/or EOS date.
   p1 
   
 ```
-
-
 
 ### Cox models
 
