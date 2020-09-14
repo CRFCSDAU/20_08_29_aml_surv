@@ -8,7 +8,7 @@
 
 # Data -------------------------------------------------------------------------
 
-  data <- read_excel("data/20_08_29_patient_data.xlsx") %>%
+  data <- read_excel("data/20_08_29_patient_data_2.xlsx") %>%
     clean_names() %>%
     remove_empty()
 
@@ -22,34 +22,38 @@
 
 # Clean ------------------------------------------------------------------------
 
-# One wrong dx date
-# No obvious correction. Set for NA and query.                           # QUERY
-  data$date_of_dx[data$id == 9] <- NA
+# One obs with EOS date before the dx date. Correct date from EE.
+  data$date_rip_last_f_up[data$date_rip_last_f_up < data$date_of_dx] <- "2019-02-21 UTC"
 
-# 3 missing a follow-up time. Set to max value                           # QUERY
-  data$date_rip_last_f_up[is.na(data$date_rip_last_f_up)] <- "2020-03-30 00:00:00"
+# OS
 
-# Not all are followed up to the same point.                             # QUERY
+  data$outcome[data$outcome == "RIP"] <- "Died"
+  data$outcome <- factor(data$outcome)
 
-# Date for TX is always before the date of DX                             #QUERY
-# data_frame(
-#   dx = data$date_of_dx,
-#   tx = data$x1st_treatment,
-#   tx_dx = dx < tx
-# ) %>%
-#   View()
+  data$died_flag <- 0
+  data$died_flag[data$outcome == "Died"] <- 1
+  # with(data, table(died_flag, outcome))
 
-# One patient has a EOS < Dx or Tx times. Set missng for now.            # QUERY
-# View(filter(data, dx_to_eos < 5))
-  data$date_rip_last_f_up[data$date_rip_last_f_up < data$x1st_treatment] <- NA
+# PFS
 
+  data$pfs_date <- data$date_rip_last_f_up
+  data$pfs_date[!is.na(data$relapse_1_progression)] <-
+    data$relapse_1_progression[!is.na(data$relapse_1_progression)]
+
+  data$pfs_outcome <- as.character(data$outcome)
+  data$pfs_outcome[!is.na(data$relapse_1_progression)] <- "Remission"
+  data$pfs_outcome <- factor(data$pfs_outcome)
+
+  data$pfs_flag <- 0
+  data$pfs_flag[data$pfs_outcome %in% c("Died", "Remission")] <- 1
+  # with(data, table(pfs_flag, pfs_outcome))
 
 # Time to event variables starting with DX
   data <- data %>%
     mutate(
-      dx_to_tx    = as.numeric(difftime(x1st_treatment,        date_of_dx,
-                                        units = "weeks")),
       dx_to_eos   = as.numeric(difftime(date_rip_last_f_up,    date_of_dx,
+                                        units = "weeks")),
+      dx_to_pfs   = as.numeric(difftime(pfs_date,              date_of_dx,
                                         units = "weeks")),
       dx_to_rec_1 = as.numeric(difftime(relapse_1_progression, date_of_dx,
                                         units = "weeks")),
@@ -60,32 +64,13 @@
     )
 
 
-# Time to event variables starting with TX
-  data <- data %>%
-    mutate(
-      tx_to_dx    = as.numeric(difftime(date_of_dx,            x1st_treatment,
-                                        units = "weeks")),
-      tx_to_eos   = as.numeric(difftime(date_rip_last_f_up,    x1st_treatment,
-                                        units = "weeks")),
-      tx_to_rec_1 = as.numeric(difftime(relapse_1_progression, x1st_treatment,
-                                        units = "weeks")),
-      tx_to_rec_2 = as.numeric(difftime(relapse_2_progression, x1st_treatment,
-                                        units = "weeks")),
-      tx_to_rec_3 = as.numeric(difftime(relapse_3_progression, x1st_treatment,
-                                        units = "weeks"))
-    )
-
-# Died
-
-  data$died <- 0
-  data$died[data$outcome == "RIP"] <- 1
-
 # Factors
 
   data$gender <- factor(data$gender, labels = c("Female", "Male"))
   data$p53_exp <- factor(data$p53_exp)
   data$bcl2_percent[data$bcl2_percent == "negative"] <- "Negative"
   data$bcl2_percent <- factor(data$bcl2_percent)
+
 
 
 # Save -------------------------------------------------------------------------
